@@ -1,0 +1,41 @@
+{
+    "name": "sd1/iam-sso-client",
+    "description": "SSO Client SDK Laravel untuk OMI-IAM — Authorization Code (redirect) & Password grant, menu/permission caching, kompatibilitas navbar IAS lama.",
+    "type": "library",
+    "license": "proprietary",
+    "keywords": ["omi-iam", "sso", "oauth2", "passport", "iam", "laravel"],
+    "authors": [
+        {
+            "name": "IT SD1"
+        }
+    ],
+    "require": {
+        "php": ">=7.1",
+        "ext-json": "*",
+        "illuminate/support": ">=5.8",
+        "illuminate/contracts": ">=5.8",
+        "guzzlehttp/guzzle": "^6.3|^7.0"
+    },
+    "suggest": {
+        "firebase/php-jwt": "Diperlukan hanya bila memakai Iam::verifiedJwtClaims() untuk memverifikasi signature JWT RS256 dari OMI-IAM (^5.5 untuk PHP 7.1, ^6.0 untuk PHP 8.0+)."
+    },
+    "autoload": {
+        "psr-4": {
+            "Sd1\\IamSsoClient\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Sd1\\IamSsoClient\\IamSsoServiceProvider"
+            ],
+            "aliases": {
+                "Iam": "Sd1\\IamSsoClient\\Facades\\Iam"
+            }
+        }
+    },
+    "minimum-stability": "stable",
+    "config": {
+        "sort-packages": true
+    }
+}

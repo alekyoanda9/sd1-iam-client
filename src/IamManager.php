@@ -104,7 +104,18 @@ class IamManager
         $token = $this->client->exchangeCode($code, $this->redirectUri());
         $this->session->putToken($token);
 
-        return $this->refreshFromMe();
+        try {
+            return $this->refreshFromMe();
+        } catch (IamApiException $e) {
+            // Penting: jangan tinggalkan token tanpa profile di session. Kalau
+            // dibiarkan, check() akan selalu false (karena profile() null)
+            // walau token-nya valid, sehingga middleware EnsureIamAuthenticated
+            // menganggap user "belum login" dan mengarahkan ke authorize lagi
+            // -> callback gagal lagi -> redirect lagi -> infinite redirect loop.
+            $this->session->clear();
+
+            throw $e;
+        }
     }
 
     /** Ambil kembali URL yang dituju user sebelum diarahkan ke login. */
@@ -122,7 +133,15 @@ class IamManager
         $token = $this->client->loginWithPassword($username, $password, $this->config['scope'] ?? '');
         $this->session->putToken($token);
 
-        return $this->refreshFromMe();
+        try {
+            return $this->refreshFromMe();
+        } catch (IamApiException $e) {
+            // Sama seperti handleCallback(): jangan tinggalkan token tanpa
+            // profile, atau check() akan berstatus tidak konsisten.
+            $this->session->clear();
+
+            throw $e;
+        }
     }
 
     protected function refreshFromMe(): IamUser

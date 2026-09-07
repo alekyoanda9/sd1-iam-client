@@ -64,9 +64,13 @@ class IamSsoController extends Controller
             return response()->json(['status' => 'error', 'message' => $message], 401);
         }
 
-        return redirect()
-            ->to(config('iam-sso.routes.home_route', '/'))
-            ->withErrors(['iam' => $message]);
+        // Sengaja TIDAK redirect ke home_route: kalau home_route dilindungi
+        // middleware iam.auth, session yang gagal login (lihat pembersihan
+        // di IamManager::handleCallback()) akan dianggap "belum login" oleh
+        // EnsureIamAuthenticated dan diarahkan balik ke authorize -> callback
+        // gagal lagi -> redirect lagi -> infinite redirect loop. Tampilkan
+        // halaman gagal login yang berdiri sendiri (route tanpa iam.auth).
+        return response()->view('iam-sso::failed', ['message' => $message], 401);
     }
 
     /**

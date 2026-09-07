@@ -47,6 +47,12 @@ class IamSsoServiceProvider extends ServiceProvider
             __DIR__ . '/../config/iam-sso.php' => config_path('iam-sso.php'),
         ], 'iam-sso-config');
 
+        $this->loadViewsFrom(__DIR__ . '/../resources/views', 'iam-sso');
+
+        $this->publishes([
+            __DIR__ . '/../resources/views' => resource_path('views/vendor/iam-sso'),
+        ], 'iam-sso-views');
+
         $router = $this->app['router'];
         $router->aliasMiddleware('iam.auth', EnsureIamAuthenticated::class);
         $router->aliasMiddleware('iam.permission', EnsureIamPermission::class);

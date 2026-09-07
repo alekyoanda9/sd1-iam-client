@@ -64,25 +64,12 @@ class IamSsoController extends Controller
             return response()->json(['status' => 'error', 'message' => $message], 401);
         }
 
-        // Sengaja TIDAK redirect ke home_route: kalau home_route dilindungi
-        // middleware iam.auth, session yang gagal login (lihat pembersihan
-        // di IamManager::handleCallback()) akan dianggap "belum login" oleh
-        // EnsureIamAuthenticated dan diarahkan balik ke authorize -> callback
-        // gagal lagi -> redirect lagi -> infinite redirect loop. Tampilkan
-        // halaman gagal login yang berdiri sendiri (route tanpa iam.auth).
-        //
-        // Catatan: link "Login Ulang" mengarah ke route iam.redirect secara
-        // eksplisit (bukan bergantung pada home_route yang mungkin tidak
-        // dilindungi iam.auth). Tapi kalau browser masih punya sesi SSO aktif
-        // di OMI-IAM, klik ini TIDAK akan menampilkan form login lagi — IAM
-        // akan auto-approve karena user sudah authenticated di sana, lalu
-        // callback akan gagal lagi dengan alasan yang sama selama akses user
-        // belum di-grant di sisi IAM. Untuk memaksa form login IAM muncul
-        // lagi, sesi SSO di IAM sendiri perlu di-logout terlebih dahulu.
         return response()->view('iam-sso::failed', [
-            'message' => $message,
-            'loginUrl' => route(config('iam-sso.routes.login_route', 'iam.redirect')),
-            'homeUrl' => url(config('iam-sso.routes.home_route', '/')),
+            'message'    => $message,
+            // Akhiri sesi SSO di IAM dulu, supaya form login IAM muncul lagi
+            // (bukan auto-approve sesi lama yang berujung gagal dgn pesan sama).
+            'reloginUrl' => route('iam.logout'),
+            'homeUrl'    => url(config('iam-sso.routes.home_route', '/')),
         ], 401);
     }
 
